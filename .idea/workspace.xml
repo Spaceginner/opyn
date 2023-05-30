@@ -4,30 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="04b314a1-e539-4ad2-b9ec-b802fa587074" name="Changes" comment="bing-bang&#10;`myapp` is inspired by Space Engineers&#10;just look at game files, and you will get it ;)">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/opyn.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manage.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/static/myapp/style.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/templates/myapp/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/myapp/views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/opyn/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/opyn/asgi.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/opyn/settings.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/opyn/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/opyn/wsgi.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    <list default="true" id="04b314a1-e539-4ad2-b9ec-b802fa587074" name="Changes" comment="i think otherwise it would be in my commit every time">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/myapp/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/myapp/models.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -154,8 +133,44 @@
       <updated>1685385541762</updated>
       <workItem from="1685385543550" duration="3729000" />
       <workItem from="1685445938116" duration="3964000" />
-      <workItem from="1685460319941" duration="7281000" />
+      <workItem from="1685460319941" duration="8290000" />
     </task>
+    <task id="LOCAL-00001" summary="bing-bang&#10;`myapp` is inspired by Space Engineers&#10;just look at game files, and you will get it ;)">
+      <created>1685468230444</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1685468230444</updated>
+    </task>
+    <task id="LOCAL-00002" summary="center the title">
+      <created>1685468346175</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1685468346175</updated>
+    </task>
+    <task id="LOCAL-00003" summary="you didnt see that">
+      <created>1685468540603</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1685468540603</updated>
+    </task>
+    <task id="LOCAL-00004" summary="i think otherwise it would be in my commit every time">
+      <created>1685468825340</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1685468825340</updated>
+    </task>
+    <task id="LOCAL-00005" summary="i think otherwise it would be in my commit every time">
+      <created>1685468859681</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1685468859681</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -177,7 +192,10 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="bing-bang&#10;`myapp` is inspired by Space Engineers&#10;just look at game files, and you will get it ;)" />
-    <option name="LAST_COMMIT_MESSAGE" value="bing-bang&#10;`myapp` is inspired by Space Engineers&#10;just look at game files, and you will get it ;)" />
+    <MESSAGE value="center the title" />
+    <MESSAGE value="you didnt see that" />
+    <MESSAGE value="i think otherwise it would be in my commit every time" />
+    <option name="LAST_COMMIT_MESSAGE" value="i think otherwise it would be in my commit every time" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/opyn$Interactive.coverage" NAME="Interactive Coverage Results" MODIFIED="1685389049859" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
