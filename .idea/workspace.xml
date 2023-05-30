@@ -86,7 +86,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Django Server.Production Server">
+  <component name="RunManager" selected="Django Server.Development Server">
     <configuration name="Development Server" type="Python.DjangoServer" factoryName="Django server">
       <module name="opyn" />
       <option name="INTERPRETER_OPTIONS" value="" />
