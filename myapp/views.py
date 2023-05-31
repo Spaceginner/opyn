@@ -23,6 +23,7 @@ def view(request, paste_url: str):
     })
 
 
+# TODO merge with `edit` or in any other way to get rid of redundancy
 # TODO hash the edit code
 def create(request):
     content = request.POST['content'].trim()
@@ -72,5 +73,55 @@ def create(request):
     return HttpResponseRedirect(reverse("myapp:view", args=(paste_url,)))
 
 
+# TODO hash the edit code
 def edit(request, paste_url: str):
-    return render(request, "myapp/edit.html")
+    paste = get_object_or_404(Paste, url_name=paste_url)
+    if not request.POST:
+        return render(request, "myapp/edit.html", {
+            'new_content': paste.content,
+            'current_url': paste_url
+        })
+    else:
+        new_content = request.POST['new_content'].strip()
+        new_paste_url = request.POST['new_paste_url']
+
+        # TODO test for availability of `paste_url` here, instead of relying on `IntegrityError`
+        error_messages = []
+        if request.POST['edit_code'] != paste.edit_code:
+            error_messages.append(f"invalid edit code")
+        if len(new_content) > 262144:
+            error_messages.append(f"new contents are too long ({len(new_content)} > 262144)")
+        elif len(new_content) < 1:
+            error_messages.append(f"new contents are too short ({len(new_content)} < 1)")
+        if len(new_paste_url) > 256:
+            error_messages.append(f"new paste url is too long ({len(new_paste_url)} > 256)")
+        if len(request.POST['new_edit_code']) > 256:
+            error_messages.append(f"new edit code is too long ({len(request.POST['new_edit_code'])} > 256)")
+        if error_messages:
+            return render(request, "myapp/edit.html", {
+                'new_content': new_content,
+                'new_edit_code': request.POST['new_edit_code'],
+                'new_paste_url': request.POST['new_paste_url'],
+                'error_messages': error_messages,
+                'current_url': paste_url
+            })
+
+        paste.content = new_content
+        if new_paste_url:
+            paste.url_name = new_paste_url
+        if request.POST['new_edit_code']:
+            paste.edit_code = request.POST['new_edit_code']
+        paste.edited_date = datetime.today()
+
+        try:
+            paste.save()
+        except IntegrityError:
+            return render(request, "myapp/edit.html", {
+                'new_content': request.POST['new_content'],
+                'new_edit_code': request.POST['new_edit_code'],
+                'new_paste_url': request.POST['new_paste_url'],
+                'error_messages': ['such new url is already taken'],
+                'current_url': paste_url
+            })
+
+        return HttpResponseRedirect(reverse("myapp:view", args=(new_paste_url if new_paste_url else paste_url,)))
