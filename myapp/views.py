@@ -27,51 +27,54 @@ def view(request, paste_url: str):
 # TODO merge with `edit` or in any other way to get rid of redundancy
 # TODO hash the edit code
 def create(request):
-    content = request.POST['content'].trim()
-    paste_url = request.POST['paste_url']
-    if not paste_url:
-        paste_url = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+    if not request.POST:
+        return render(request, "myapp/create.html")
+    else:
+        content = request.POST['content'].strip()
+        paste_url = request.POST['paste_url']
+        if not paste_url:
+            paste_url = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
 
-    # TODO test for availability of `paste_url` here, instead of relying on `IntegrityError`
-    error_messages = []
-    if len(content) > 262144:
-        error_messages.append(f"contents is too long ({len(content)} > 262144)")
-    elif len(content) < 1:
-        error_messages.append(f"contents are too short ({len(content)} < 1)")
-    if len(paste_url) > 256:
-        error_messages.append(f"paste url is too long ({len(paste_url)} > 256)")
-    if len(request.POST['edit_code']) > 256:
-        error_messages.append(f"edit code is too long ({len(request.POST['edit_code'])} > 256)")
-    elif len(request.POST['edit_code']) < 1:
-        error_messages.append(f"edit code is too short ({len(request.POST['edit_code'])} < 1)")
-    if error_messages:
-        return render(request, "myapp/index.html", {
-            'content': content,
-            'edit_code': request.POST['edit_code'],
-            'paste_url': request.POST['paste_url'],
-            'error_messages': error_messages
-        })
+        # TODO test for availability of `paste_url` here, instead of relying on `IntegrityError`
+        error_messages = []
+        if len(content) > 262144:
+            error_messages.append(f"contents is too long ({len(content)} > 262144)")
+        elif len(content) < 1:
+            error_messages.append(f"contents are too short ({len(content)} < 1)")
+        if len(paste_url) > 256:
+            error_messages.append(f"paste url is too long ({len(paste_url)} > 256)")
+        if len(request.POST['edit_code']) > 256:
+            error_messages.append(f"edit code is too long ({len(request.POST['edit_code'])} > 256)")
+        elif len(request.POST['edit_code']) < 1:
+            error_messages.append(f"edit code is too short ({len(request.POST['edit_code'])} < 1)")
+        if error_messages:
+            return render(request, "myapp/create.html", {
+                'content': content,
+                'edit_code': request.POST['edit_code'],
+                'paste_url': request.POST['paste_url'],
+                'error_messages': error_messages
+            })
 
-    creation_date = datetime.today()
-    paste = Paste(
-        content=content,
-        url_name=paste_url,
-        edit_code=request.POST['edit_code'],
-        creation_date=creation_date,
-        edited_date=creation_date
-    )
+        creation_date = datetime.today()
+        paste = Paste(
+            content=content,
+            url_name=paste_url,
+            edit_code=request.POST['edit_code'],
+            creation_date=creation_date,
+            edited_date=creation_date
+        )
 
-    try:
-        paste.save()
-    except IntegrityError:
-        return render(request, "myapp/index.html", {
-            'content': request.POST['content'],
-            'edit_code': request.POST['edit_code'],
-            'paste_url': request.POST['paste_url'],
-            'error_messages': ['such url is already taken']
-        })
+        try:
+            paste.save()
+        except IntegrityError:
+            return render(request, "myapp/create.html", {
+                'content': request.POST['content'],
+                'edit_code': request.POST['edit_code'],
+                'paste_url': request.POST['paste_url'],
+                'error_messages': ['such url is already taken']
+            })
 
-    return HttpResponseRedirect(reverse("myapp:view", args=(paste_url,)))
+        return HttpResponseRedirect(reverse("myapp:view", args=(paste_url,)))
 
 
 # TODO hash the edit code
