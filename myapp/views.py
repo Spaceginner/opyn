@@ -19,7 +19,8 @@ def index(request):
 def view(request, paste_url: str):
     paste = get_object_or_404(Paste, url_name=paste_url)
     return render(request, "myapp/view.html", {
-        'content': paste.content
+        'content': paste.content,
+        'current_url': paste_url
     })
 
 

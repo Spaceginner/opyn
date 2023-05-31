@@ -16,14 +16,23 @@
         </div>
         {% endif %}
         <div class="h-screen py-4">
-            <div class="border-4 rounded-lg p-8 max-w-min mx-auto h-full">
-                        <textarea name="content" maxlength="262144" cols="110" disabled
+            <div class="border-4 rounded-lg p-8 max-w-min mx-auto h-full flex flex-col">
+                <div class="h-full box-border grow">
+                    <textarea name="content" maxlength="262144" cols="110" disabled 
                               class="resize-none h-full mx-1
                               bg-gray-100 rounded border-0
                               focus:ring focus:ring-indigo-700 focus:ring-offset-2">{{ content }}</textarea>
                 </div>
-            </form>
-        </div>
+                {# TODO F*CKING MAKE THIS DIV 40PX!!!! #}
+                <div class="text-left mt-8 h-[40px]">
+                    <a href="{% url 'myapp:edit' current_url %}"
+                       class="mx-1 px-2 h-[8px] py-[12px]
+                       bg-gray-100 rounded border-0
+                       focus:ring focus:ring-indigo-700 focus:ring-offset-2 focus:outline-none
+                       hover:bg-gray-300 hover:cursor-pointer
+                       active:bg-gray-400">edit</a>
+                </div>
+            </div>
         </div>
     </body>
 </html>
