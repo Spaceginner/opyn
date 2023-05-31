@@ -129,3 +129,17 @@ def edit(request, paste_url: str):
             })
 
         return HttpResponseRedirect(reverse("myapp:view", args=(new_paste_url if new_paste_url else paste_url,)))
+
+
+# error handlers
+
+def page_not_found(request, exception=None):
+    return render(request, "myapp/error.html", {'error_code': 404})
+
+
+def server_error(request, exception=None):
+    return render(request, "myapp/error.html", {'error_code': 500})
+
+
+def bad_request(request, exception=None):
+    return render(request, "myapp/error.html", {'error_code': 400})

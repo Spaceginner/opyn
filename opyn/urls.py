@@ -22,3 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls"))
 ]
+
+handler404 = "myapp.views.page_not_found"
+handler500 = "myapp.views.server_error"
+handler400 = "myapp.views.bad_request"
