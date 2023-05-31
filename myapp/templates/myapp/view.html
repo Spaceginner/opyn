@@ -8,6 +8,14 @@
         {% tailwind_css %}
     </head>
     <body class="text-center font-mono">
+        <div class="absolute top-10 right-10">
+            <a href="{% url 'myapp:index' %}"
+                   class="mx-2 px-2 py-[8px] max-w-min
+                       bg-gray-100 rounded border-0
+                       focus:ring focus:ring-indigo-700 focus:ring-offset-2 focus:outline-none
+                       hover:bg-gray-300 hover:cursor-pointer
+                       active:bg-gray-400">home</a>
+        </div>
         {% if error_messages %}
         <div class="absolute top-10 left-10 bg-gray-50 ring ring-rose-600 ring-offset-2 rounded p-3 text-left">
             {% for error_message in error_messages %}
