@@ -1,4 +1,9 @@
+import random
+import string
+
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 
 
 def index(request):
@@ -10,7 +15,12 @@ def view(request, paste_url: str):
 
 
 def create(request):
-    return render(request, "myapp/create.html")
+    paste_url = request.POST['paste_url']
+
+    if not paste_url:
+        paste_url = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+
+    return HttpResponseRedirect(reverse("myapp:view", args=(paste_url,)))
 
 
 def edit(request, paste_url: str):
