@@ -1,11 +1,10 @@
 from datetime import datetime
 import random
 import string
-import time
 
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 
 from .models import Paste
@@ -15,8 +14,13 @@ def index(request):
     return render(request, "myapp/index.html")
 
 
+# TODO create a markdown engine
+# TODO redirect user to `create` page if 404
 def view(request, paste_url: str):
-    return render(request, "myapp/view.html")
+    paste = get_object_or_404(Paste, url_name=paste_url)
+    return render(request, "myapp/view.html", {
+        'content': paste.content
+    })
 
 
 # TODO hash the edit code
@@ -40,7 +44,7 @@ def create(request):
         error_messages.append(f"edit code is too short ({len(request.POST['edit_code'])} < 1)")
     if error_messages:
         return render(request, "myapp/index.html", {
-            'content': request.POST['content'],
+            'content': content,
             'edit_code': request.POST['edit_code'],
             'paste_url': request.POST['paste_url'],
             'error_messages': error_messages

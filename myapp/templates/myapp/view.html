@@ -4,10 +4,26 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>opyn.view</title>
+        <title>opyn</title>
         {% tailwind_css %}
     </head>
-    <body>
-        <h1>placeholder!</h1>
+    <body class="text-center font-mono">
+        {% if error_messages %}
+        <div class="absolute top-10 left-10 bg-gray-50 ring ring-rose-600 ring-offset-2 rounded p-3 text-left">
+            {% for error_message in error_messages %}
+            <p><strong>ERROR: {{ error_message }}</strong></p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="h-screen py-4">
+            <div class="border-4 rounded-lg p-8 max-w-min mx-auto h-full">
+                        <textarea name="content" maxlength="262144" cols="110" disabled
+                              class="resize-none h-full mx-1
+                              bg-gray-100 rounded border-0
+                              focus:ring focus:ring-indigo-700 focus:ring-offset-2">{{ content }}</textarea>
+                </div>
+            </form>
+        </div>
+        </div>
     </body>
 </html>
