@@ -4,4 +4,4 @@ venv/
 __pycache__/
 db.sqlite3
 migrations/
-myapp/static/css/styles.css
+/myapp/static/css/dist/styles.css
