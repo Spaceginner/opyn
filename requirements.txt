@@ -1,3 +1,4 @@
 django~=4.2.1
 python-dotenv
 django-tailwind
+whitenoise
