@@ -12,7 +12,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
-import dotenv; dotenv.load_dotenv()  # NOQA E702
+if not os.path.isfile(".env"):
+    from django.core.management.utils import get_random_secret_key
+    with open(".env", 'w') as f:
+        f.write(f"SECRET_KEY=django-insecure-{get_random_secret_key()}")
+
+import dotenv; dotenv.load_dotenv(".env")  # NOQA E702
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
