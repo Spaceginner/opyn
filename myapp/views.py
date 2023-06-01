@@ -14,8 +14,6 @@ def index(request):
     return render(request, "myapp/index.html")
 
 
-# TODO create a markdown engine
-# TODO redirect user to `create` page if 404
 def view(request, paste_url: str):
     paste = get_object_or_404(Paste, url_name=paste_url)
     return render(request, "myapp/view.html", {
@@ -24,8 +22,6 @@ def view(request, paste_url: str):
     })
 
 
-# TODO merge with `edit` or in any other way to get rid of redundancy
-# TODO hash the edit code
 def create(request):
     if not request.POST:
         return render(request, "myapp/create.html")
@@ -35,7 +31,6 @@ def create(request):
         if not paste_url:
             paste_url = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
 
-        # TODO test for availability of `paste_url` here, instead of relying on `IntegrityError`
         error_messages = []
         if len(content) > 262144:
             error_messages.append(f"contents is too long ({len(content)} > 262144)")
@@ -77,7 +72,6 @@ def create(request):
         return HttpResponseRedirect(reverse("myapp:view", args=(paste_url,)))
 
 
-# TODO hash the edit code
 def edit(request, paste_url: str):
     paste = get_object_or_404(Paste, url_name=paste_url)
     if not request.POST:
@@ -89,7 +83,6 @@ def edit(request, paste_url: str):
         new_content = request.POST['new_content'].strip()
         new_paste_url = request.POST['new_paste_url']
 
-        # TODO test for availability of `paste_url` here, instead of relying on `IntegrityError`
         error_messages = []
         if request.POST['edit_code'] != paste.edit_code:
             error_messages.append(f"invalid edit code")
