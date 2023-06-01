@@ -1,4 +1,4 @@
-HEADER_TEXT_SIZES = (4.5, 3.25, 2.75, 2, 1.75, 1.5)
+HEADER_TEXT_SIZES = (3.5, 2.25, 1.75, 1.35, 1.25, 1.15)
 
 
 def _get_text_size(header_size: int) -> int:
