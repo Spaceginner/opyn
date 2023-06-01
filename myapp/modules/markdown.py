@@ -54,7 +54,7 @@ def parse_text(s: str) -> str:
                     if k + 1 == len(s[i+j+2:]): break  # NOQA E701
                     url += s[i+j+3:][k]
                     k += 1
-            buffer += f"<a href=\"{url}\" target=\"_blank\" class=\"markdown-link\">{url_desc}</a>"
+            buffer += f"<a href=\"{url[:-1]}\" target=\"_blank\" class=\"markdown-link\">{url_desc}</a>"
             skip = j+k+2
 
         else:
