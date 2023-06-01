@@ -1,3 +1,9 @@
+##################################
+# HERE BE DRAGONS. BE CAREFUL.
+# CODE IS ABSOLUTELY GARBAGE.
+##################################
+
+
 HEADER_TEXT_SIZES = (3.5, 2.25, 1.75, 1.35, 1.25, 1.15)
 
 
