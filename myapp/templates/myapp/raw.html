@@ -1,0 +1,45 @@
+{% load static tailwind_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>opyn.view</title>
+        {% tailwind_css %}
+    </head>
+    <body class="text-center font-mono">
+        <div class="absolute top-10 right-10">
+            <a href="{% url 'myapp:index' %}"
+                   class="mx-2 px-2 py-[8px] max-w-min
+                       bg-gray-100 rounded border-0
+                       focus:ring focus:ring-indigo-700 focus:ring-offset-2 focus:outline-none
+                       hover:bg-gray-300 hover:cursor-pointer
+                       active:bg-gray-400">home</a>
+        </div>
+        {% if error_messages %}
+        <div class="absolute top-10 left-10 bg-gray-50 ring ring-rose-600 ring-offset-2 rounded p-3 text-left">
+            {% for error_message in error_messages %}
+            <p><strong>ERROR: {{ error_message }}</strong></p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="h-screen py-4 w-256 mx-auto">
+            <div class="border-4 rounded-lg p-8 w-full h-full flex flex-col">
+                <div class="h-full box-border grow">
+                    <textarea name="content" maxlength="262144" placeholder="markdown goes here."
+                              class="resize-none h-full mx-1 w-full
+                              bg-gray-100 rounded border-0
+                              focus:ring focus:ring-indigo-700 focus:ring-offset-2">{{ raw_markdown }}</textarea>
+                </div>
+                <div class="text-left mt-8 h-[40px]">
+                    <a href="{% url 'myapp:view' current_url %}"
+                       class="mx-1 px-2 h-[8px] py-[12px]
+                       bg-gray-100 rounded border-0
+                       focus:ring focus:ring-indigo-700 focus:ring-offset-2 focus:outline-none
+                       hover:bg-gray-300 hover:cursor-pointer
+                       active:bg-gray-400">compiled</a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
