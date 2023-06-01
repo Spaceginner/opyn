@@ -23,6 +23,14 @@ def view(request, paste_url: str):
     })
 
 
+def raw(request, paste_url: str):
+    paste = get_object_or_404(Paste, url_name=paste_url)
+    return render(request, "myapp/raw.html", {
+        'raw_markdown': paste.content,
+        'current_url': paste_url
+    })
+
+
 def create(request):
     if not request.POST:
         return render(request, "myapp/create.html")
