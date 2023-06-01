@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+from django.utils.html import escape
 
 from .models import Paste
 from .modules.markdown import compile_md
@@ -122,7 +123,7 @@ def edit(request, paste_url: str):
             paste.edit_code = request.POST['new_edit_code']
         paste.edited_date = datetime.today()
 
-        paste.compiled = compile_md(new_content)
+        paste.compiled = compile_md(escape(new_content))
 
         try:
             paste.save()
