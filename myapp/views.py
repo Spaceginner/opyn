@@ -8,6 +8,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 
 from .models import Paste
+from .modules.markdown import compile_md
 
 
 def index(request):
@@ -17,7 +18,7 @@ def index(request):
 def view(request, paste_url: str):
     paste = get_object_or_404(Paste, url_name=paste_url)
     return render(request, "myapp/view.html", {
-        'content': paste.content,
+        'compiled': paste.compiled,
         'current_url': paste_url
     })
 
@@ -50,11 +51,14 @@ def create(request):
                 'error_messages': error_messages
             })
 
+        compiled = compile_md(content)
+
         creation_date = datetime.today()
         paste = Paste(
             content=content,
             url_name=paste_url,
             edit_code=request.POST['edit_code'],
+            compiled=compiled,
             creation_date=creation_date,
             edited_date=creation_date
         )
@@ -109,6 +113,8 @@ def edit(request, paste_url: str):
         if request.POST['new_edit_code']:
             paste.edit_code = request.POST['new_edit_code']
         paste.edited_date = datetime.today()
+
+        paste.compiled = compile_md(new_content)
 
         try:
             paste.save()

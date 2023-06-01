@@ -23,14 +23,14 @@
             {% endfor %}
         </div>
         {% endif %}
-        <div class="h-screen py-4">
-            <div class="border-4 rounded-lg p-8 max-w-min mx-auto h-full">
+        <div class="h-screen w-256 py-4 mx-auto">
+            <div class="border-4 rounded-lg p-8 w-full mx-auto h-full">
             <form action="{% url 'myapp:create' %}" method="post" class="h-full">
                 {% csrf_token %}
                 <div class="flex flex-col h-full">
                     <div class="box-border grow">
-                        <textarea name="content" maxlength="262144" cols="110" placeholder="markdown goes here."
-                              class="resize-none h-full mx-1
+                        <textarea name="content" maxlength="262144" placeholder="markdown goes here."
+                              class="resize-none h-full mx-1 w-full
                               bg-gray-100 rounded border-0
                               focus:ring focus:ring-indigo-700 focus:ring-offset-2">{{ content }}</textarea>
                     </div>
