@@ -19,7 +19,11 @@ def parse_text(s: str) -> str:
         'italics': False,
         'bold': False,
         'underlined': False,
-        'striked': False
+        'striked': False,
+        'align': {
+            'right': False,
+            'left': False
+        }
     }
     buffer: str = ""
     skip: int = 0
@@ -48,6 +52,16 @@ def parse_text(s: str) -> str:
                 modes['underlined'] = True
                 buffer += "<u>"
             skip = 1
+        elif s[i:i+5] == '-&gt;':
+            subbuffer, j = "", 0
+            while s[i+j+1:i+j+6] not in ['-&gt;', '&lt;-']:
+                subbuffer += s[i+j+2]
+                j += 1
+            if s[i+j+1:i+j+6] == '-&gt;':
+                buffer += f"<div style=\"text-align: right;\">{subbuffer[3:-1]}</div>"
+            if s[i+j+1:i+j+6] == '&lt;-':
+                buffer += f"<div style=\"text-align: center;\">{subbuffer[3:-1]}</div>"
+            skip = j+6
         elif char == '[':
             url_desc, url = "", ""
             j, k = 0, 0
