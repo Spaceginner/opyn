@@ -3,6 +3,8 @@ from datetime import datetime
 import random
 import string
 
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_slug
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -56,6 +58,9 @@ def create(request):
             error_messages.append(f"edit code is too short ({len(request.POST['edit_code'])} < 1)")
         if Paste.objects.filter(url_name=paste_url).exists():
             error_messages.append(f"such url is already taken")
+        try: validate_slug(paste_url)  # NOQA E702
+        except ValidationError:
+            error_messages.append("url must only contain letters, numbers, hyphens and underscores")
         if error_messages:
             return render(request, "myapp/create.html", {
                 'content': content,
@@ -106,8 +111,11 @@ def edit(request, paste_url: str):
             error_messages.append(f"new paste url is too long ({len(new_paste_url)} > 256)")
         if len(request.POST['new_edit_code']) > 512:
             error_messages.append(f"new edit code is too long ({len(request.POST['new_edit_code'])} > 512)")
-        if request.POST['new_paste_url'] and Paste.objects.filter(url_name=new_paste_url).exists():
+        if new_paste_url and Paste.objects.filter(url_name=new_paste_url).exists():
             error_messages.append(f"such new url is already taken")
+        try: validate_slug(new_paste_url)  # NOQA E702
+        except ValidationError:
+            error_messages.append("new url must only contain letters, numbers, hyphens and underscores")
         if error_messages:
             return render(request, "myapp/edit.html", {
                 'new_content': new_content,
