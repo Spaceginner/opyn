@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 import random
 import string
@@ -10,6 +11,7 @@ from django.utils.html import escape
 
 from .models import Paste
 from .modules.markdown import compile_md
+from .modules.utils import hash_sha512
 
 
 def index(request):
@@ -37,7 +39,7 @@ def create(request):
         return render(request, "myapp/create.html")
     else:
         content = request.POST['content'].strip()
-        paste_url = request.POST['paste_url']
+        paste_url = request.POST['paste_url'].strip()
         if not paste_url:
             paste_url = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
 
@@ -48,17 +50,20 @@ def create(request):
             error_messages.append(f"contents are too short ({len(content)} < 1)")
         if len(paste_url) > 256:
             error_messages.append(f"paste url is too long ({len(paste_url)} > 256)")
-        if len(request.POST['edit_code']) > 256:
-            error_messages.append(f"edit code is too long ({len(request.POST['edit_code'])} > 256)")
+        if len(request.POST['edit_code']) > 512:
+            error_messages.append(f"edit code is too long ({len(request.POST['edit_code'])} > 512)")
         elif len(request.POST['edit_code']) < 1:
             error_messages.append(f"edit code is too short ({len(request.POST['edit_code'])} < 1)")
+        if Paste.objects.filter(url_name=paste_url).exists():
+            error_messages.append(f"such url is already taken")
         if error_messages:
             return render(request, "myapp/create.html", {
                 'content': content,
-                'edit_code': request.POST['edit_code'],
                 'paste_url': request.POST['paste_url'],
                 'error_messages': error_messages
             })
+
+        edit_code = hash_sha512(request.POST['edit_code'])
 
         compiled = compile_md(content)
 
@@ -66,21 +71,13 @@ def create(request):
         paste = Paste(
             content=content,
             url_name=paste_url,
-            edit_code=request.POST['edit_code'],
+            edit_code=edit_code,
             compiled=compiled,
             creation_date=creation_date,
             edited_date=creation_date
         )
 
-        try:
-            paste.save()
-        except IntegrityError:
-            return render(request, "myapp/create.html", {
-                'content': request.POST['content'],
-                'edit_code': request.POST['edit_code'],
-                'paste_url': request.POST['paste_url'],
-                'error_messages': ['such url is already taken']
-            })
+        paste.save()
 
         return HttpResponseRedirect(reverse("myapp:view", args=(paste_url,)))
 
@@ -94,10 +91,12 @@ def edit(request, paste_url: str):
         })
     else:
         new_content = request.POST['new_content'].strip()
-        new_paste_url = request.POST['new_paste_url']
+        new_paste_url = request.POST['new_paste_url'].strip()
+
+        entered_edit_code = hash_sha512(request.POST['edit_code'])
 
         error_messages = []
-        if request.POST['edit_code'] != paste.edit_code:
+        if entered_edit_code != paste.edit_code:
             error_messages.append(f"invalid edit code")
         if len(new_content) > 262144:
             error_messages.append(f"new contents are too long ({len(new_content)} > 262144)")
@@ -105,12 +104,13 @@ def edit(request, paste_url: str):
             error_messages.append(f"new contents are too short ({len(new_content)} < 1)")
         if len(new_paste_url) > 256:
             error_messages.append(f"new paste url is too long ({len(new_paste_url)} > 256)")
-        if len(request.POST['new_edit_code']) > 256:
-            error_messages.append(f"new edit code is too long ({len(request.POST['new_edit_code'])} > 256)")
+        if len(request.POST['new_edit_code']) > 512:
+            error_messages.append(f"new edit code is too long ({len(request.POST['new_edit_code'])} > 512)")
+        if request.POST['new_paste_url'] and Paste.objects.filter(url_name=new_paste_url).exists():
+            error_messages.append(f"such new url is already taken")
         if error_messages:
             return render(request, "myapp/edit.html", {
                 'new_content': new_content,
-                'new_edit_code': request.POST['new_edit_code'],
                 'new_paste_url': request.POST['new_paste_url'],
                 'error_messages': error_messages,
                 'current_url': paste_url
@@ -120,21 +120,12 @@ def edit(request, paste_url: str):
         if new_paste_url:
             paste.url_name = new_paste_url
         if request.POST['new_edit_code']:
-            paste.edit_code = request.POST['new_edit_code']
+            paste.edit_code = hash_sha512(request.POST['new_edit_code'])
         paste.edited_date = datetime.today()
 
         paste.compiled = compile_md(escape(new_content))
 
-        try:
-            paste.save()
-        except IntegrityError:
-            return render(request, "myapp/edit.html", {
-                'new_content': request.POST['new_content'],
-                'new_edit_code': request.POST['new_edit_code'],
-                'new_paste_url': request.POST['new_paste_url'],
-                'error_messages': ['such new url is already taken'],
-                'current_url': paste_url
-            })
+        paste.save()
 
         return HttpResponseRedirect(reverse("myapp:view", args=(new_paste_url if new_paste_url else paste_url,)))
 
