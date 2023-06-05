@@ -113,9 +113,11 @@ def edit(request, paste_url: str):
             error_messages.append(f"new edit code is too long ({len(request.POST['new_edit_code'])} > 512)")
         if new_paste_url and Paste.objects.filter(url_name=new_paste_url).exists():
             error_messages.append(f"such new url is already taken")
-        try: validate_slug(new_paste_url)  # NOQA E702
-        except ValidationError:
-            error_messages.append("new url must only contain letters, numbers, hyphens and underscores")
+        if new_paste_url:
+            try:
+                validate_slug(new_paste_url)  # NOQA E702
+            except ValidationError:
+                error_messages.append("new url must only contain letters, numbers, hyphens and underscores")
         if error_messages:
             return render(request, "myapp/edit.html", {
                 'new_content': new_content,
