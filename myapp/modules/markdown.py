@@ -1,125 +1,108 @@
-##################################
-# HERE BE DRAGONS. BE CAREFUL.
-# CODE IS ABSOLUTELY GARBAGE.
-##################################
+def _get_item_len(item):
+    return len(item)
 
 
-HEADER_TEXT_SIZES = (3.5, 2.25, 1.75, 1.35, 1.25, 1.15)
-
-
-def _get_text_size(header_size: int) -> int:
-    if header_size < 1 or header_size > 6:
-        raise ValueError("`header_size` has to be larger than 0 and less than 7")
-
-    return HEADER_TEXT_SIZES[header_size-1]
-
-
-def parse_text(s: str) -> str:
-    modes: dict[str, bool] = {
-        'italics': False,
-        'bold': False,
-        'underlined': False,
-        'striked': False,
-        'align': {
-            'right': False,
-            'left': False
+class Token:
+    def __init__(self, raw_opening: str, raw_closing: str | None, compiled_opening: str, compiled_closing: str | None, enclosed: bool):
+        self.raw: dict[str, str] = {
+            'opening': raw_opening,
+            'closing': raw_closing
         }
-    }
-    buffer: str = ""
-    skip: int = 0
-    for i, char in enumerate(s):
-        if skip > 0: skip -= 1; continue  # NOQA E702
-        if s[i:i+2] == '**':
-            if modes['bold']:
-                modes['bold'] = False
-                buffer += "</strong>"
-            else:
-                modes['bold'] = True
-                buffer += "<strong>"
-            skip = 1
-        elif char == '*':
-            if modes['italics']:
-                modes['italics'] = False
-                buffer += "</em>"
-            else:
-                modes['italics'] = True
-                buffer += "<em>"
-        elif s[i:i+2] == '__':
-            if modes['underlined']:
-                modes['underlined'] = False
-                buffer += "</u>"
-            else:
-                modes['underlined'] = True
-                buffer += "<u>"
-            skip = 1
-        elif s[i:i+5] == '-&gt;':
-            subbuffer, j = "", 0
-            while s[i+j+1:i+j+6] not in ['-&gt;', '&lt;-']:
-                subbuffer += s[i+j+2]
-                j += 1
-            if s[i+j+1:i+j+6] == '-&gt;':
-                buffer += f"<div style=\"text-align: right;\">{subbuffer[3:-1]}</div>"
-            if s[i+j+1:i+j+6] == '&lt;-':
-                buffer += f"<div style=\"text-align: center;\">{subbuffer[3:-1]}</div>"
-            skip = j+6
-        elif char == '[':
-            url_desc, url = "", ""
-            j, k = 0, 0
-            while s[i+1:][j] != ']':
-                if j+1 == len(s[i:]) : break  # NOQA E701
-                url_desc += s[i+1:][j]
-                j += 1
-            if s[i+j+2] == '(':
-                while s[i+j+2:][k] != ')':
-                    if k + 1 == len(s[i+j+2:]): break  # NOQA E701
-                    url += s[i+j+3:][k]
-                    k += 1
-            buffer += f"<a href=\"{url[:-1]}\" target=\"_blank\" class=\"markdown-link\">{url_desc}</a>"
-            skip = j+k+2
+        self.compiled: dict[str, str] = {
+            'opening': compiled_opening,
+            'closing': compiled_closing
+        }
+        self.enclosed = enclosed
 
-        else:
-            buffer += char
-    return buffer
+    def get_compiled(self, s: str) -> str:
+        return f"{self.compiled['opening']}" \
+               f"{s if self.enclosed else ''}" \
+               f"{self.compiled['closing'] if self.compiled['closing'] is not None else ''}"
+
+
+class MarkdownCompiler:
+    def __init__(self):
+        self.tokens: list[Token] = []
+
+    def add_token(self, token: Token):
+        self.tokens.append(token)
+
+    def compile(self, raw_md: str) -> str:
+        # split.
+
+        raw_tokens: list[str] = []
+
+        unique_symbols = []
+        for symbol in [token.raw['opening'] for token in self.tokens] + [token.raw['closing'] for token in self.tokens]:
+            if symbol not in unique_symbols and symbol is not None:
+                unique_symbols.append(symbol)
+
+        unique_symbols.sort(reverse=True, key=_get_item_len)
+
+        buffer, skip = "", 0
+        for i in range(len(raw_md)):
+            if skip: skip -= 1; continue  # NOQA E702
+
+            match_found = False
+            for unique_symbol in unique_symbols:
+                if raw_md[i:i + len(unique_symbol)] == unique_symbol:
+                    if buffer:
+                        raw_tokens.append(buffer)
+                        buffer = ""
+
+                    raw_tokens.append(unique_symbol)
+                    skip = len(unique_symbol) - 1
+                    match_found = True
+                    break
+            if not match_found:
+                buffer += raw_md[i]
+
+        # match.
+
+        html, skip = "", 0
+
+        for i in range(len(raw_tokens)):
+            if skip: skip -= 1; continue  # NOQA E702
+
+            match_found = False
+
+            for token in self.tokens:
+                if i + 3 > len(raw_tokens):
+                    break
+                if raw_tokens[i] == token.raw['opening'] and \
+                        (token.raw['closing'] is None or raw_tokens[i + 2] == token.raw['closing']):
+                    html += token.get_compiled(raw_tokens[i + 1] if token.raw['closing'] is not None else raw_tokens[i])
+                    skip = 2 if token.raw['closing'] is not None else 0
+                    match_found = True
+                    break
+            if not match_found:
+                html += raw_tokens[i]
+
+        return html
 
 
 def compile_md(raw_markdown: str) -> str:
-    html = ""
+    compiler = MarkdownCompiler()
 
-    paragraph, previous_token_text = "", False
-    md_lines = [line.strip() for line in raw_markdown.split('\n')]
-    for i, md_line in enumerate(md_lines):
-        if md_line.startswith('#'):  # header
-            previous_token_text = False
-            # i believe there should be a dedicated builtin method for this
-            count = 0
-            while md_line[count] == '#':
-                count += 1
+    compiler.add_token(Token('# ', '\r\n\r\n', '<h1 style=\"font-size: 3.5rem\">', '</h1><br>', True))
+    compiler.add_token(Token('## ', '\r\n\r\n', '<h2 style=\"font-size: 2.25rem\">', '</h2><br>', True))
+    compiler.add_token(Token('### ', '\r\n\r\n', '<h3 style=\"font-size: 1.75rem\">', '</h3><br>', True))
+    compiler.add_token(Token('#### ', '\r\n\r\n', '<h4 style=\"font-size: 1.35rem\">', '</h4><br>', True))
+    compiler.add_token(Token('##### ', '\r\n\r\n', '<h5 style=\"font-size: 1.25rem\">', '</h5><br>', True))
+    compiler.add_token(Token('###### ', '\r\n\r\n', '<h6 style=\"font-size: 1.15rem\">', '</h6><br>', True))
 
-            if count > 6:  # ignore
-                if i + 1 == len(md_lines) and md_line:
-                    paragraph += f" {md_line}"
-                if (md_lines[i] == '' or not previous_token_text or i + 1 == len(md_lines)) and paragraph.strip():
-                    html += f"<p>{parse_text(paragraph.strip())}</p><br>\n"
-                    paragraph = ""
-                else:
-                    paragraph += f" {md_line}"
-                previous_token_text = True
+    compiler.add_token(Token('*', '*', '<em>', '</em>', True))
+    compiler.add_token(Token('**', '**', '<strong>', '</strong>', True))
+    compiler.add_token(Token('***', '***', '<strong><em>', '</em></strong>', True))
+    compiler.add_token(Token('__', '__', '<u>', '</u>', True))
 
-            if md_line[count] == ' ':
-                text_size = _get_text_size(count)
-                html += f"<h{count} style=\"font-size: {text_size}rem\">" \
-                        f"{md_line[count+1:].strip()}</h{count}>\n"
-        elif md_line in ['---', '***']:
-            previous_token_text = False
-            html += "<hr>\n"
-        else:  # normal text
-            if i+1 == len(md_lines) and md_line:
-                paragraph += f" {md_line}"
-            if (md_lines[i] == '' or not previous_token_text or i+1 == len(md_lines)) and paragraph.strip():
-                html += f"<p>{parse_text(paragraph.strip())}</p><br>\n"
-                paragraph = ""
-            else:
-                paragraph += f" {md_line}"
-            previous_token_text = True
+    compiler.add_token(Token('-&gt;', '-&gt;', '<div style=\"text-align: right;\">', '</div>', True))
+    compiler.add_token(Token('-&gt;', '&lt;-', '<div style=\"text-align: center;\">', '</div>', True))
 
-    return html
+    compiler.add_token(Token('\r\n---\r\n', None, '<hr>', None, False))
+    compiler.add_token(Token('\r\n***\r\n', None, '<hr>', None, False))
+
+    compiler.add_token(Token('\r\n\r\n', None, '<br>', None, False))
+    compiler.add_token(Token('\r\n', None, ' ', None, False))
+
+    return compiler.compile(raw_markdown + '\r\n\r\n')
