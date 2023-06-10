@@ -1,6 +1,30 @@
 def _get_item_len(item):
     return len(item)
 
+def _get_unique_items(items, allow_none: bool = True):
+    unique_items = []
+
+    for item in items:
+        if not allow_none and item is None:
+            continue
+
+        if item not in unique_items:
+            unique_items.append(item)
+
+    return unique_items
+
+
+def _join(s: list[str] | tuple[str]) -> str:
+    return "".join(s)
+
+
+def _contains_potential_tokens(raw_md: str, symbols: list[str] | tuple[str]) -> bool:
+    for symbol in symbols:
+        if symbol in raw_md:
+            return True
+
+    return False
+
 
 class Token:
     def __init__(self, raw_opening: str, raw_closing: str | None, compiled_opening: str, compiled_closing: str | None, enclosed: bool):
@@ -32,11 +56,10 @@ class MarkdownCompiler:
 
         raw_tokens: list[str] = []
 
-        unique_symbols = []
-        for symbol in [token.raw['opening'] for token in self.tokens] + [token.raw['closing'] for token in self.tokens]:
-            if symbol not in unique_symbols and symbol is not None:
-                unique_symbols.append(symbol)
-
+        unique_symbols = _get_unique_items(
+            [token.raw['opening'] for token in self.tokens] + [token.raw['closing'] for token in self.tokens],
+            allow_none=False
+        )
         unique_symbols.sort(reverse=True, key=_get_item_len)
 
         buffer, skip = "", 0
@@ -61,6 +84,7 @@ class MarkdownCompiler:
 
         html, skip = "", 0
 
+        # well... yes it is recursive
         for i in range(len(raw_tokens)):
             if skip: skip -= 1; continue  # NOQA E702
 
@@ -69,14 +93,30 @@ class MarkdownCompiler:
             for token in self.tokens:
                 if i + 3 > len(raw_tokens):
                     break
-                if raw_tokens[i] == token.raw['opening'] and \
-                        (token.raw['closing'] is None or raw_tokens[i + 2] == token.raw['closing']):
-                    html += token.get_compiled(raw_tokens[i + 1] if token.raw['closing'] is not None else raw_tokens[i])
-                    skip = 2 if token.raw['closing'] is not None else 0
+                if raw_tokens[i] == token.raw['opening']:
+                    j = 0
+                    if token.raw['closing'] is not None:
+                        j, invalid = 1, False
+                        while raw_tokens[i+j] != token.raw['closing']:
+                            j += 1
+                            if i+j >= len(raw_tokens):
+                                invalid = True; break  # NOQA E702
+                        if invalid:
+                            continue
+
+                    token_content = _join(raw_tokens[i+1:i+j])
+
+                    if _contains_potential_tokens(token_content, unique_symbols):
+                        token_content = compile_md(token_content)
+
+                    html += token.get_compiled(token_content)
+                    skip = j
                     match_found = True
                     break
+
             if not match_found:
                 html += raw_tokens[i]
+
 
         return html
 
