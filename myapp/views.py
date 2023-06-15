@@ -37,14 +37,16 @@ def raw(request, paste_url: str):
 
 
 def create(request):
-    if not request.POST:
+    if not request.POST:  # if it is just viewing the page
         return render(request, "myapp/create.html")
     else:
+        # prepare
         content = request.POST['content'].strip()
         paste_url = request.POST['paste_url'].strip()
         if not paste_url:
             paste_url = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
 
+        # validate
         error_messages = []
         if len(content) > 262144:
             error_messages.append(f"contents is too long ({len(content)} > 262144)")
@@ -70,6 +72,7 @@ def create(request):
 
         edit_code = hash_sha512(request.POST['edit_code'])
 
+        # create the paste
         compiled = compile_md(content)
 
         creation_date = datetime.today()
@@ -84,22 +87,25 @@ def create(request):
 
         paste.save()
 
+        # redirect user to the `view` page
         return HttpResponseRedirect(reverse("myapp:view", args=(paste_url,)))
 
 
 def edit(request, paste_url: str):
     paste = get_object_or_404(Paste, url_name=paste_url)
-    if not request.POST:
+    if not request.POST:  # if it is just viewing the page
         return render(request, "myapp/edit.html", {
             'new_content': paste.content,
             'current_url': paste_url
         })
     else:
+        # prepare
         new_content = request.POST['new_content'].strip()
         new_paste_url = request.POST['new_paste_url'].strip()
 
         entered_edit_code = hash_sha512(request.POST['edit_code'])
 
+        # validate
         error_messages = []
         if entered_edit_code != paste.edit_code:
             error_messages.append(f"invalid edit code")
@@ -115,7 +121,7 @@ def edit(request, paste_url: str):
             error_messages.append(f"such new url is already taken")
         if new_paste_url:
             try:
-                validate_slug(new_paste_url)  # NOQA E702
+                validate_slug(new_paste_url)
             except ValidationError:
                 error_messages.append("new url must only contain letters, numbers, hyphens and underscores")
         if error_messages:
@@ -126,6 +132,7 @@ def edit(request, paste_url: str):
                 'current_url': paste_url
             })
 
+        # edit the paste
         paste.content = new_content
         if new_paste_url:
             paste.url_name = new_paste_url
@@ -137,10 +144,11 @@ def edit(request, paste_url: str):
 
         paste.save()
 
+        # redirect user to the `view` page
         return HttpResponseRedirect(reverse("myapp:view", args=(new_paste_url if new_paste_url else paste_url,)))
 
 
-# error handlers
+# error page handlers
 
 def page_not_found(request, exception=None):
     return render(request, "myapp/error.html", {'error_code': 404})

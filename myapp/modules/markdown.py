@@ -1,3 +1,4 @@
+# needed for sorting
 def _get_item_len(item):
     return len(item)
 
@@ -14,6 +15,7 @@ def _get_unique_items(items, allow_none: bool = True):
     return unique_items
 
 
+# just a shorthand
 def _join(s: list[str] | tuple[str]) -> str:
     return "".join(s)
 
@@ -54,14 +56,26 @@ class MarkdownCompiler:
     def compile(self, raw_md: str) -> str:
         # split.
 
+        # this step will split up raw markdown
+        # ie «text can be **bold** btw» will turn into
+        # ["text can be ", "**", "bold", "**", " btw"]
+        # it is just easier like this
+
+        # the thing that will store splitted markdown
         raw_tokens: list[str] = []
 
+        # get all unique symbols which are used for tokens
+        # sorted from largest to smallest
+        # we need this in order for it not to split up
+        # a bigger token with a smaller one0
         unique_symbols = _get_unique_items(
             [token.raw['opening'] for token in self.tokens] + [token.raw['closing'] for token in self.tokens],
             allow_none=False
         )
         unique_symbols.sort(reverse=True, key=_get_item_len)
 
+        # we will be checking at every point
+        # if next symbols match any of the symbols
         buffer, skip = "", 0
         for i in range(len(raw_md)):
             if skip: skip -= 1; continue  # NOQA E702
@@ -82,17 +96,22 @@ class MarkdownCompiler:
 
         # match.
 
+        # here we
+
         html, skip = "", 0
 
-        # well... yes it is recursive
+
         for i in range(len(raw_tokens)):
             if skip: skip -= 1; continue  # NOQA E702
 
             match_found = False
 
             for token in self.tokens:
+                # if there can't be any possible tokens left
+                # just stop trying to match any tokens
                 if i + 3 > len(raw_tokens):
                     break
+
                 if raw_tokens[i] == token.raw['opening']:
                     j = 0
                     if token.raw['closing'] is not None:
@@ -106,6 +125,9 @@ class MarkdownCompiler:
 
                     token_content = _join(raw_tokens[i+1:i+j])
 
+                    # if token contents themselves contain uncompiled markdown
+                    # it is time for the oldest trick in the book: recursive function
+                    # unfortunately this does mean it may give up if it will go too recursive
                     if _contains_potential_tokens(token_content, unique_symbols):
                         token_content = compile_md(token_content)
 
@@ -124,6 +146,7 @@ class MarkdownCompiler:
 def compile_md(raw_markdown: str) -> str:
     compiler = MarkdownCompiler()
 
+    # headers
     compiler.add_token(Token('# ', '\r\n\r\n', '<h1 style=\"font-size: 3.5rem\">', '</h1><br>', True))
     compiler.add_token(Token('## ', '\r\n\r\n', '<h2 style=\"font-size: 2.25rem\">', '</h2><br>', True))
     compiler.add_token(Token('### ', '\r\n\r\n', '<h3 style=\"font-size: 1.75rem\">', '</h3><br>', True))
@@ -131,18 +154,26 @@ def compile_md(raw_markdown: str) -> str:
     compiler.add_token(Token('##### ', '\r\n\r\n', '<h5 style=\"font-size: 1.25rem\">', '</h5><br>', True))
     compiler.add_token(Token('###### ', '\r\n\r\n', '<h6 style=\"font-size: 1.15rem\">', '</h6><br>', True))
 
+    # text formatting
     compiler.add_token(Token('*', '*', '<em>', '</em>', True))
     compiler.add_token(Token('**', '**', '<strong>', '</strong>', True))
-    compiler.add_token(Token('***', '***', '<strong><em>', '</em></strong>', True))
     compiler.add_token(Token('__', '__', '<u>', '</u>', True))
 
+    # idk why but it fails to parse such thing by itself
+    # so we have to register the thing separate manually
+    compiler.add_token(Token('***', '***', '<strong><em>', '</em></strong>', True))
+
+    # text align
+    # we have to escape `<` and `>` as in HTML since the input is gonna be escaped, so we have to escape here too
     compiler.add_token(Token('-&gt;', '-&gt;', '<div style=\"text-align: right;\">', '</div>', True))
     compiler.add_token(Token('-&gt;', '&lt;-', '<div style=\"text-align: center;\">', '</div>', True))
 
+    # horizontal rule
     compiler.add_token(Token('\r\n---\r\n', None, '<hr>', None, False))
     compiler.add_token(Token('\r\n***\r\n', None, '<hr>', None, False))
 
+    # newline
     compiler.add_token(Token('\r\n\r\n', None, '<br>', None, False))
     compiler.add_token(Token('\r\n', None, ' ', None, False))
 
-    return compiler.compile(raw_markdown + '\r\n\r\n')
+    return compiler.compile(raw_markdown + '\r\n\r\n')  # we have to add the token for break line manually as it gets stripped
