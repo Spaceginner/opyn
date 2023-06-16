@@ -1,0 +1,13 @@
+{% extends "myapp/bones/plate.html" %}
+
+{% block body %}
+<body class="font-mono flex flex-col h-screen">
+    <div class="mx-auto align-middle m-auto">
+        <div class="text-center">
+            <h1 class="text-5xl">{% block main_text %}{% endblock %}</h1>
+            <p>{% block text %}{% endblock %}</p>
+        </div>
+        {% block extra %}{% endblock %}
+    </div>
+</body>
+{% endblock %}
