@@ -158,6 +158,7 @@ def compile_md(raw_markdown: str) -> str:
     compiler.add_token(Token('*', '*', '<em>', '</em>', True))
     compiler.add_token(Token('**', '**', '<strong>', '</strong>', True))
     compiler.add_token(Token('__', '__', '<u>', '</u>', True))
+    compiler.add_token(Token('~~', '~~', '<s>', '</s>', True))
 
     # idk why but it fails to parse such thing by itself
     # so we have to register the thing separate manually
